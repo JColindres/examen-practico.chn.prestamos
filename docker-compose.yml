@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: prestamos
+      MYSQL_ROOT_PASSWORD: "passCHN2026"
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build:
+      context: ./prestamos
+      dockerfile: Dockerfile
+    container_name: spring-app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/prestamos?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: "passCHN2026"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: MiClaveSuperSecretaDePruebaCHN2024
+
+  web:
+    build:
+      context: ./chn-web-prestamos
+      dockerfile: Dockerfile
+    container_name: vue-app
+    restart: always
+    ports:
+      - "8081:80"
+    depends_on:
+      - app
